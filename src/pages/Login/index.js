@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, ActivityIndicator} from 'react-native';
 import {
   Button,
   ButtonText,
@@ -18,7 +18,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const {signUp} = useContext(AuthContext);
+  const {signUp, signIn, loadingAuth} = useContext(AuthContext);
 
   function toggleLogin() {
     setLogin(!login);
@@ -27,11 +27,13 @@ export default function Login() {
     setPassword('');
   }
 
-  function handleSignIn() {
+  async function handleSignIn() {
     if (email === '' || password === '') {
       console.log('PREENCHA TODOS OS CAMPOS');
       return;
     }
+
+    await signIn(email, password);
   }
 
   async function handleSignUp() {
@@ -63,7 +65,11 @@ export default function Login() {
         />
 
         <Button onPress={handleSignIn}>
-          <ButtonText>Acessar</ButtonText>
+          {loadingAuth ? (
+            <ActivityIndicator size={20} color="#FFF" />
+          ) : (
+            <ButtonText>Acessar</ButtonText>
+          )}
         </Button>
 
         <SignUpButton onPress={toggleLogin}>
@@ -98,7 +104,11 @@ export default function Login() {
       />
 
       <Button onPress={handleSignUp}>
-        <ButtonText>Cadastrar</ButtonText>
+        {loadingAuth ? (
+          <ActivityIndicator size={20} color="#FFF" />
+        ) : (
+          <ButtonText>Cadastrar</ButtonText>
+        )}
       </Button>
 
       <SignUpButton onPress={toggleLogin}>
