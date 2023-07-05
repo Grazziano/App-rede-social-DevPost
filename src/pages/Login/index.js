@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {View, Text} from 'react-native';
 import {
   Button,
@@ -10,11 +10,15 @@ import {
   Title,
 } from './styles';
 
+import {AuthContext} from '../../contexts/auth';
+
 export default function Login() {
   const [login, setLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const {signUp} = useContext(AuthContext);
 
   function toggleLogin() {
     setLogin(!login);
@@ -30,11 +34,13 @@ export default function Login() {
     }
   }
 
-  function handleSignUp() {
+  async function handleSignUp() {
     if (name === '' || email === '' || password === '') {
       console.log('PREENCHA TODOS OS CAMPOS');
       return;
     }
+
+    await signUp(email, password, name);
   }
 
   if (login) {
