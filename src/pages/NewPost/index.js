@@ -1,20 +1,66 @@
-import React, {useState, useLayoutEffect} from 'react';
+import React, {useState, useLayoutEffect, useContext} from 'react';
 import {useNavigation} from '@react-navigation/native';
+
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
+
+import {AuthContext} from '../../contexts/auth';
+
 import {Button, ButtonText, Container, Input} from './styles';
 
 export default function NewPost() {
   const navigation = useNavigation();
+  const {user} = useContext(AuthContext);
   const [post, setPost] = useState();
 
   useLayoutEffect(() => {
     const options = navigation.setOptions({
       headerRight: () => (
-        <Button>
+        <Button onPress={handlePost}>
           <ButtonText>Compartilhar</ButtonText>
         </Button>
       ),
     });
   }, [navigation, post]);
+
+  async function handlePost() {
+    if (post === '') {
+      console.log('Seu post contém conteudo inválido.');
+      return;
+    }
+
+    let avatarUrl = null;
+    try {
+      let response = await storage()
+        .ref('users')
+        .child(user?.uid)
+        .getDownloadURL();
+
+      avatarUrl = response;
+    } catch (error) {
+      avatarUrl = null;
+    }
+
+    await firestore()
+      .collection('posts')
+      .add({
+        created: new Date(),
+        content: post,
+        autor: user?.nome,
+        userId: user?.uid,
+        likes: 0,
+        avatarUrl,
+      })
+      .then(() => {
+        setPost('');
+        console.log('POST CRIADO COM SUCESSO');
+      })
+      .catch(error => {
+        console.log('ERRO AO CRIAR O POST ', error);
+      });
+
+    navigation.goBack();
+  }
 
   return (
     <Container>
