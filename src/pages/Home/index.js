@@ -1,26 +1,70 @@
-import React, {useState} from 'react';
-import {View, Text} from 'react-native';
+import React, {useState, useContext, useCallback} from 'react';
+import {ActivityIndicator, Text, View} from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
+import {AuthContext} from '../../contexts/auth';
+import firestore from '@react-native-firebase/firestore';
 
 import {ButtonPost, Container, ListPosts} from './styles';
 
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import Header from '../../components/Header';
 
 export default function Home() {
   const navigation = useNavigation();
-  const [posts, setPosts] = useState([
-    {id: 1, content: 'TESTE123'},
-    {id: 2, content: 'TESTE123'},
-    {id: 3, content: 'TESTE123'},
-  ]);
+  const {user} = useContext(AuthContext);
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      function fetchPosts() {
+        firestore()
+          .collection('posts')
+          .orderBy('created', 'desc')
+          .limit(5)
+          .get()
+          .then(snapshot => {
+            if (isActive) {
+              setPosts([]);
+              const postList = [];
+
+              snapshot.docs.map(u => {
+                postList.push({
+                  ...u.data(),
+                  id: u.id,
+                });
+              });
+
+              setPosts(postList);
+              setLoading(false);
+            }
+          });
+      }
+
+      fetchPosts();
+
+      return () => {
+        // console.log('Desmontou');
+        isActive = false;
+      };
+    }, []),
+  );
 
   return (
     <Container>
       <Header />
 
-      <ListPosts data={posts} renderItem={({item}) => <Text>TESTE</Text>} />
+      {loading ? (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size={50} color="#E52246" />
+        </View>
+      ) : (
+        <ListPosts data={posts} renderItem={({item}) => <Text>TESTE</Text>} />
+      )}
 
       <ButtonPost
         activeOpacity={0.8}
