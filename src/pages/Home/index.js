@@ -65,6 +65,7 @@ export default function Home() {
         </View>
       ) : (
         <ListPosts
+          showsVerticalScrollIndicator={false}
           data={posts}
           renderItem={({item}) => <PostsList data={item} userId={user?.uid} />}
         />
