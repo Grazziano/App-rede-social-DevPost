@@ -9,6 +9,7 @@ import {ButtonPost, Container, ListPosts} from './styles';
 
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import Header from '../../components/Header';
+import PostsList from '../../components/PostsList';
 
 export default function Home() {
   const navigation = useNavigation();
@@ -63,7 +64,10 @@ export default function Home() {
           <ActivityIndicator size={50} color="#E52246" />
         </View>
       ) : (
-        <ListPosts data={posts} renderItem={({item}) => <Text>TESTE</Text>} />
+        <ListPosts
+          data={posts}
+          renderItem={({item}) => <PostsList data={item} userId={user?.uid} />}
+        />
       )}
 
       <ButtonPost
