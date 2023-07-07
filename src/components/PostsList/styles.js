@@ -4,8 +4,10 @@ export const Container = styled.View`
   margin-top: 8px;
   margin: 8px 2%;
   background-color: #fff;
-  border-width: 8px;
+  border-radius: 8px;
+  /* border-width: 1px; */
   box-shadow: 1px 1px 3px rgba(18, 18, 18, 0.2);
+  /* elevation: 3; */
   padding: 11px;
 `;
 
