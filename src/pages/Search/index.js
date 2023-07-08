@@ -5,6 +5,8 @@ import Feather from 'react-native-vector-icons/Feather';
 
 import firestore from '@react-native-firebase/firestore';
 
+import SearchList from '../../components/SearchList';
+
 export default function Search() {
   const [input, setInput] = useState('');
   const [users, setUsers] = useState([]);
@@ -48,6 +50,8 @@ export default function Search() {
           placeholderTextColor="#353840"
         />
       </AreaInput>
+
+      <List data={users} renderItem={({item}) => <SearchList data={item} />} />
     </Container>
   );
 }
