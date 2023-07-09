@@ -1,6 +1,8 @@
 import React, {useContext, useState} from 'react';
 import {Modal, Platform} from 'react-native';
 
+import firestore from '@react-native-firebase/firestore';
+
 import {AuthContext} from '../../contexts/auth';
 
 import Header from '../../components/Header';
@@ -21,7 +23,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 
 export default function Profile() {
-  const {signOut, user} = useContext(AuthContext);
+  const {signOut, user, setUser, storageUser} = useContext(AuthContext);
 
   const [nome, setNome] = useState(user?.nome);
   const [url, setUrl] = useState(null);
@@ -31,8 +33,38 @@ export default function Profile() {
     await signOut();
   }
 
+  // atualizar o perfil
   async function updateProfile() {
-    alert('TESTE');
+    if (nome === '') {
+      return;
+    }
+
+    await firestore().collection('users').doc(user?.uid).update({
+      nome: nome,
+    });
+
+    // buscar todos os posts desse user e atualizar o nome dele
+    const postDocs = await firestore()
+      .collection('posts')
+      .where('userId', '==', user.uid)
+      .get();
+
+    // percorrer todos os posts desse user e atualizar
+    postDocs.forEach(async doc => {
+      await firestore().collection('posts').doc(doc.id).update({
+        autor: nome,
+      });
+    });
+
+    let data = {
+      uid: user.uid,
+      nome: nome,
+      email: user.email,
+    };
+
+    setUser(data);
+    storageUser(data);
+    setOpen(false);
   }
 
   return (
