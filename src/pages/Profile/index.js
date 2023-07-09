@@ -33,14 +33,18 @@ export default function Profile() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    let isActive = true;
+
     async function loadAvatar() {
       try {
-        let response = await storage()
-          .ref('users')
-          .child(user?.uid)
-          .getDownloadURL();
+        if (isActive) {
+          let response = await storage()
+            .ref('users')
+            .child(user?.uid)
+            .getDownloadURL();
 
-        setUrl(response);
+          setUrl(response);
+        }
       } catch (error) {
         console.log('NAO ENCONTRAMOS NENHUMA FOTO', error);
       }
@@ -48,7 +52,7 @@ export default function Profile() {
 
     loadAvatar();
 
-    return () => loadAvatar();
+    return () => (isActive = false);
   }, []);
 
   async function handleSignOut() {
