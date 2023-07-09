@@ -4,6 +4,7 @@ import {Modal, Platform} from 'react-native';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 
 import {AuthContext} from '../../contexts/auth';
 
@@ -82,9 +83,53 @@ export default function Profile() {
         console.log('Ops parece que deu algum erro');
       } else {
         // subir parao firebase
-        console.log('Enviar pro firebase');
+        // console.log('Enviar pro firebase');
+        uploadFileFirebase(response).then(() => {
+          uploadAvatarPosts();
+        });
+
+        console.log('URI DA FOTO: ', response.assets[0].uri);
+        setUrl(response.assets[0].uri);
       }
     });
+  };
+
+  const getFileLocalPath = response => {
+    // extrair e retornar a url da foto
+    return response.assets[0].uri;
+  };
+
+  const uploadFileFirebase = async response => {
+    const fileSource = getFileLocalPath(response);
+    // console.log(fileSource);
+    const storageRef = storage().ref('users').child(user?.uid);
+
+    return await storageRef.putFile(fileSource);
+  };
+
+  const uploadAvatarPosts = async () => {
+    const storageRef = storage().ref('users').child(user?.uid);
+    const url = await storageRef
+      .getDownloadURL()
+      .then(async image => {
+        console.log('URL RECEBIDA: ', image);
+
+        // atualizar todas as imagens dos posts desse usuario
+        const postDocs = await firestore()
+          .collection('posts')
+          .where('userId', '==', user.uid)
+          .get();
+
+        // percorrer todos os posts e trocar a url da imagem
+        postDocs.forEach(async doc => {
+          await firestore().collection('posts').doc(doc.id).update({
+            avatarUrl: image,
+          });
+        });
+      })
+      .catch(error => {
+        console.log('ERROR AO ATUALIZAR FOTO DOS POSTS', error);
+      });
   };
 
   return (
