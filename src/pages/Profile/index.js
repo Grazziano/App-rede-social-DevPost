@@ -1,6 +1,8 @@
 import React, {useContext, useState} from 'react';
 import {Modal, Platform} from 'react-native';
 
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+
 import firestore from '@react-native-firebase/firestore';
 
 import {AuthContext} from '../../contexts/auth';
@@ -67,17 +69,35 @@ export default function Profile() {
     setOpen(false);
   }
 
+  const uploadFile = () => {
+    const options = {
+      noData: true,
+      mediaType: 'photo',
+    };
+
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('Cancelou');
+      } else if (response.error) {
+        console.log('Ops parece que deu algum erro');
+      } else {
+        // subir parao firebase
+        console.log('Enviar pro firebase');
+      }
+    });
+  };
+
   return (
     <Container>
       <Header />
 
       {url ? (
-        <UploadButton onPress={() => alert('Clicou na foto!')}>
+        <UploadButton onPress={() => uploadFile()}>
           <UploadText>+</UploadText>
           <Avatar source={{uri: url}} />
         </UploadButton>
       ) : (
-        <UploadButton>
+        <UploadButton onPress={() => uploadFile()}>
           <UploadText>+</UploadText>
         </UploadButton>
       )}
